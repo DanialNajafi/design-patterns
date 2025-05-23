@@ -11,35 +11,34 @@ export interface ParkingEvent {
   capacity: number;
   action: 'enter' | 'exit';
 }
-export class ParkingLot {
-  public occupied: number = 0;
+export class ParkingLot implements Publisher {
+  private subs: Subscriber[] = [];
 
-  constructor(
-    public name: string,
-    public capacity: number,
-  ) {}
+  subscribe(sub: Subscriber) { this.subs.push(sub); }
+  unsubscribe(sub: Subscriber) { this.subs = this.subs.filter(s => s!==sub); }
 
-  enter() {
-    if (!this.isFull()) {
+  private notifyAll(action: 'enter'|'exit') {
+    const evt: ParkingEvent = {
+      name: this.name,
+      occupied: this.occupied,
+      capacity: this.capacity,
+      action
+    };
+    this.subs.forEach(s => s.notify(evt));
+  }
+
+  public enter() {
+    if (this.occupied < this.capacity) {
       this.occupied++;
-    } else {
-      throw new Error(`the parking lot is full`);
+      this.notifyAll('enter');
     }
   }
 
-  exit() {
-    if (!this.isEmpty()) {
+  public exit() {
+    if (this.occupied > 0) {
       this.occupied--;
-    } else {
-      throw new Error(`the parking lot is empty`);
+      this.notifyAll('exit');
     }
-  }
-
-  isFull() {
-    return this.occupied == this.capacity;
-  }
-
-  isEmpty() {
-    return this.occupied == 0;
   }
 }
+
