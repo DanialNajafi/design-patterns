@@ -1,3 +1,16 @@
+export interface Subscriber {
+  notify(event: ParkingEvent): void;
+}
+export interface Publisher {
+  subscribe(sub: Subscriber): void;
+  unsubscribe(sub: Subscriber): void;
+}
+export interface ParkingEvent {
+  name: string;
+  occupied: number;
+  capacity: number;
+  action: 'enter' | 'exit';
+}
 export class ParkingLot {
   public occupied: number = 0;
 
