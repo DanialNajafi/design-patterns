@@ -1,9 +1,9 @@
-enum State {
-  CleanUnsaved,
-  CleanSaved,
-  DirtyUnsaved,
-  DirtySaved,
+interface EditorState {
+  save(editor: TextEditor): void;
+  edit(editor: TextEditor, newText: string): void;
+  getName(editor: TextEditor): string | null;
 }
+
 
 const textArea = document.getElementById("text") as HTMLTextAreaElement;
 let state = State.CleanUnsaved;
