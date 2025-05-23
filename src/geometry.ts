@@ -27,3 +27,7 @@ export class RectangleAdapter implements Rectangular {
     return this.square.getSide();
   }
 }
+public getWidthHeightRatio(rect: Rectangular): number {
+  return rect.width / rect.height;
+}
+
