@@ -1,43 +1,46 @@
 import { ParkingLot } from "./parking-lot.js";
+import { Display }    from "./display.js";
 
-const maxFillIntervalMillis = 1000;
-const maxEmptyIntervalMillis = 2000;
-const initialFillPhaseMillis = 5000;
-const refreshDisplayIntervalMillis = 250;
+const maxFillIntervalMillis      = 1000;
+const maxEmptyIntervalMillis     = 2000;
+const initialFillPhaseMillis     = 5000;
 
-const sleep = (millis: number) => new Promise((r) => setTimeout(r, millis));
-
-const rand = (min: number, max: number) =>
+// Hilfsfunktionen
+const sleep = (millis: number) => new Promise(r => setTimeout(r, millis));
+const rand  = (min: number, max: number) =>
   Math.floor(Math.random() * (max - min + 1));
 
+// Füllt das Parkhaus, bis es voll ist
 const fill = async (lot: ParkingLot) => {
   while (!lot.isFull()) {
     await sleep(rand(0, maxFillIntervalMillis));
-    lot.enter();
-    console.log(`a car entered the lot ${lot.name}`);
+    lot.enter();   // löst notify bei allen Subscribers aus
   }
 };
 
+// Leert das Parkhaus, bis es leer ist
 const empty = async (lot: ParkingLot) => {
   while (!lot.isEmpty()) {
     await sleep(rand(0, maxEmptyIntervalMillis));
-    lot.exit();
-    console.log(`a car left the lot ${lot.name}`);
+    lot.exit();    // löst notify bei allen Subscribers aus
   }
 };
 
-const display = async (lot: ParkingLot) => {
-  while (true) {
-    console.log(`${lot.name}: ${lot.occupied}/${lot.capacity} occupied`);
-    await sleep(refreshDisplayIntervalMillis);
-  }
-};
+(async () => {
+  const bahnhofParking = new ParkingLot("Bahnhof Parking", 100);
 
-const bahnhofParking = new ParkingLot("Bahnhof Parking", 100);
-const screen = display(bahnhofParking);
-const filler = fill(bahnhofParking);
-await sleep(initialFillPhaseMillis);
-const emptier = empty(bahnhofParking);
-await screen;
-await filler;
-await emptier;
+  // Display-Subscriber registrieren
+  const display = new Display();
+  bahnhofParking.subscribe(display);
+
+  // Starte Füll- und Leerprozesse
+  const filler = fill(bahnhofParking);
+
+  // Warte initiale Füllphase
+  await sleep(initialFillPhaseMillis);
+
+  const emptier = empty(bahnhofParking);
+
+  // Warte, bis beides durchgelaufen ist
+  await Promise.all([filler, emptier]);
+})();
